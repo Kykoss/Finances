@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FinanzberaterHenno.Contracts
+{
+    public enum PaymentType
+    {
+        Unknown,
+
+        DebitCard,
+
+        CashPayout,
+
+        PayPal,
+
+        DirectBooking,
+
+        PermanentDebit,
+
+        MonthClosing,
+
+        IncommingCredit
+    }
+}

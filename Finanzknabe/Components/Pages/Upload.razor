@@ -1,0 +1,56 @@
+﻿@page "/upload"
+@rendermode InteractiveServer
+@using FinanzberaterHenno.Contracts
+@using FinanzberaterHenno.Dal.TransactionImpoter
+@attribute [StreamRendering]
+
+<PageTitle>Upload</PageTitle>
+
+<h1>Kontoauszüge hochladen</h1>
+
+<InputFile OnChange="LoadFiles" accepts=".csv"/>
+
+@if (this.Transactions != null)
+{
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Monatlich</th>
+                <th>Empfänger</th>
+                <th>Zweck</th>
+                <th>Betrag</th>
+                <th>Zahlungstyp</th>
+                <th>Transaktionstyp</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var transaction in this.Transactions)
+            {
+                <tr>
+                    <td>@transaction.Date.ToShortDateString()</td>
+                    <td>@transaction.Monthly</td>
+                    <td>@transaction.Recipient</td>
+                    <td>@transaction.Purpose</td>
+                    <td>@transaction.Amount</td>
+                    <td>@transaction.PaymentType</td>
+                    <td>@transaction.Type</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private List<Transaction>? Transactions;
+
+    private async void LoadFiles(InputFileChangeEventArgs e)
+    {
+        var file = e.GetMultipleFiles().Single();
+        var sparkassenImporter = new SparkassenTransactionImporter(file);
+
+        this.Transactions = await sparkassenImporter.GetTransactions();
+    }
+}
