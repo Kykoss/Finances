@@ -1,20 +1,23 @@
 ﻿using FinanzberaterHenno.Contracts;
+using Finanzknabe.Dal.Extensions;
+using Finanzknabe.Data;
 using Microsoft.AspNetCore.Components.Forms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinanzberaterHenno.Dal.TransactionImpoter
 {
-    public class SparkassenTransactionImporter(IBrowserFile importPath) : TransactionImporterBase(importPath)
+
+    public class SparkassenTransactionImporter : TransactionImporterBase
     {
-        public async override Task<List<Transaction>> GetTransactions()
+        public SparkassenTransactionImporter(AppDbContext dbContext) : base(dbContext)
+        {
+        }
+
+        public async override Task<List<Transaction>> GetTransactions(IBrowserFile importPath)
         {
             var firstLine = true;
             var transactions = new List<Transaction>();
-            foreach (var entry in await this.ReadoutCSV())
+            foreach (var entry in await this.ReadoutCSV(importPath))
             {
                 if (firstLine)
                 {
@@ -28,7 +31,15 @@ namespace FinanzberaterHenno.Dal.TransactionImpoter
                     continue;
                 }
 
-                transactions.Add(new Transaction(DateOnly.Parse(entry[1]), double.Parse(entry[14]), entry[11], entry[4], this.GetPaymentType(entry[3])));
+                var originAccount = this.GetBankAccount(entry[0]);
+                var date = DateOnly.Parse(entry[1]);
+                var amount = double.Parse(entry[14]);
+                var debitor = entry[11];
+                var purpose = entry[4];
+                var paymentType = this.GetPaymentType(entry[3]);
+                var recipientName = paymentType != PaymentType.PayPal ? debitor : purpose;
+                var recipient = this.GetOrCreateRecipient(transactions, recipientName);
+                transactions.Add(new Transaction(originAccount, date, recipient, amount, debitor, purpose, paymentType));
             }
 
             return transactions;

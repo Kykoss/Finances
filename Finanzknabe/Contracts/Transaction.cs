@@ -1,31 +1,43 @@
-﻿namespace FinanzberaterHenno.Contracts
+﻿using Finanzknabe.Contracts;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace FinanzberaterHenno.Contracts
 {
     public class Transaction
     {
-        public DateOnly Date { get; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        public double Amount { get; }
+        public DateOnly Date { get; set; }
 
-        public Recipient Recipient { get; }
+        public double Amount { get; set; }
 
-        public TransactionType Type { get; set; }
+        public Recipient Recipient { get; set; }
 
-        public string Purpose { get; }
+        public TransactionType TransactionType { get; set; }
 
-        public bool Monthly { get; }
+        public string Purpose { get; set; }
 
-        public PaymentType PaymentType { get; }
+        public bool Monthly { get; set; }
 
-        public Transaction(DateOnly date, double amount, string debitor, string purpose, PaymentType paymentType)
+        public PaymentType PaymentType { get; set; }
+
+        public BankAccount Account { get; set; }
+
+        public Transaction()
         {
+        }
+
+        public Transaction(BankAccount originAccount, DateOnly date, Recipient recipient, double amount, string debitor, string purpose, PaymentType paymentType)
+        {
+            this.Account = originAccount;
             this.Date = date;
             this.Amount = amount;
             this.PaymentType = debitor.StartsWith("PayPal") ? PaymentType.PayPal : paymentType;
-            this.Recipient = new Recipient(this.PaymentType != PaymentType.PayPal ? debitor : purpose);
-            this.Type = this.Recipient.DefaultTransactionType;
+            this.Recipient = recipient;
+            this.TransactionType = this.Recipient.DefaultTransactionType;
             this.Purpose = purpose;
             
-
         }
     }
 }

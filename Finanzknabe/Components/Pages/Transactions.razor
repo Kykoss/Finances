@@ -1,41 +1,41 @@
-﻿@page "/upload"
+﻿@page "/transactions"
 @rendermode InteractiveServer
 @attribute [StreamRendering]
 
 @using FinanzberaterHenno.Contracts
-@using FinanzberaterHenno.Dal.TransactionImpoter
 @using Finanzknabe.Data
+@using Microsoft.EntityFrameworkCore
 
 @inject AppDbContext AppDbContext
 
-<PageTitle>Upload</PageTitle>
+<PageTitle>Transaktionen</PageTitle>
 
-<h1>Kontoauszüge hochladen</h1>
-
-<InputFile OnChange="LoadFiles" accepts=".csv"/>
-
-@if (this.Transactions != null)
+@if (this.TransactionList == null)
 {
+    <p><em>Loading...</em></p>
+}
+else
+{ 
     <table class="table">
 
         <thead>
             <tr>
                 <th>Datum</th>
-				<th>Monatlich</th>
-				<th>Zweck</th>
+                <th>Monatlich</th>
                 <th>Empfänger</th>
+                <th>Zweck</th>
                 <th>Betrag</th>
                 <th>Zahlungstyp</th>
                 <th>Transaktionstyp</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var transaction in this.Transactions)
+            @foreach (var transaction in this.TransactionList)
             {
                 <tr>
                     <td>@transaction.Date.ToShortDateString()</td>
-                    <td>@transaction.Monthly</td>
-                    <td>@transaction.Recipient</td>
+                    <td align="center"><input type="checkbox" value="@transaction.Monthly" /></td>
+                    <td>@transaction.Recipient.Name</td>
                     <td>@transaction.Purpose</td>
                     <td>@transaction.Amount</td>
                     <td>@transaction.PaymentType</td>
@@ -48,16 +48,10 @@
 
 @code {
 
-    private List<Transaction>? Transactions;
+    private List<Transaction>? TransactionList;
 
-    private async void LoadFiles(InputFileChangeEventArgs e)
+    protected override async Task OnInitializedAsync()
     {
-        var file = e.GetMultipleFiles().Single();
-        var sparkassenImporter = new SparkassenTransactionImporter(this.AppDbContext);
-
-        this.Transactions = await sparkassenImporter.GetTransactions(file);
-
-        this.AppDbContext.Transactions.AddRange(this.Transactions);
-        this.AppDbContext.SaveChanges();
+        this.TransactionList = AppDbContext.Set<Transaction>().Include(x => x.Recipient).Include(x => x.Account).ToList();
     }
 }

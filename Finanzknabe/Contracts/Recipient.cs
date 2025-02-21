@@ -1,15 +1,25 @@
-﻿namespace FinanzberaterHenno.Contracts
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace FinanzberaterHenno.Contracts
 {
     public class Recipient
     {
-        public string Name { get; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ID { get; set; }
 
-        public TransactionType DefaultTransactionType { get; } = TransactionType.Uncategorized;
+        public string Name { get; set; }
+
+        public TransactionType DefaultTransactionType { get; set; } = TransactionType.Uncategorized;
+
+        public Recipient()
+        {
+        }
 
         public Recipient(string name)
         {
             this.Name = name;
         }
-
     }
 }
