@@ -22,11 +22,10 @@ else
             <tr>
                 <th>Datum</th>
                 <th>Monatlich</th>
+                <th>Transaktionstyp</th>
                 <th>Empfänger</th>
-                <th>Zweck</th>
                 <th>Betrag</th>
                 <th>Zahlungstyp</th>
-                <th>Transaktionstyp</th>
             </tr>
         </thead>
         <tbody>
@@ -35,11 +34,10 @@ else
                 <tr>
                     <td>@transaction.Date.ToShortDateString()</td>
                     <td align="center"><input type="checkbox" value="@transaction.Monthly" /></td>
-                    <td>@transaction.Recipient.Name</td>
-                    <td>@transaction.Purpose</td>
-                    <td>@transaction.Amount</td>
-                    <td>@transaction.PaymentType</td>
-                    <td>@transaction.TransactionType</td>
+                    <td align="center"><img src="@Path.Combine($@"images\transactionTypes\{transaction.TransactionType.ToString()}.png")" title="@transaction.TransactionType" width="30" /></td>
+                    <td>@this.GetRecipientInfo(transaction)</td>
+                    <td>@string.Format("{0:C}", transaction.Amount)</td>
+                    <td align="center"><img src="@Path.Combine($@"images\paymentTypes\{transaction.PaymentType.ToString()}.png")" title="@transaction.PaymentType" width="30" /></td>
                 </tr>
             }
         </tbody>
@@ -53,5 +51,23 @@ else
     protected override async Task OnInitializedAsync()
     {
         this.TransactionList = AppDbContext.Set<Transaction>().Include(x => x.Recipient).Include(x => x.Account).ToList();
+    }
+
+    private string GetRecipientInfo(Transaction transaction)
+    {
+        if (transaction.PaymentType == PaymentType.MonthClosing)
+        {
+            return transaction.Purpose;
+        }
+
+        if (transaction.PaymentType == PaymentType.PayPal)
+        {
+            // Trim the ugly PayPal Prefix (e.g. '1033602738945/PP.7051.PP/.')
+            var splittedPurpose = transaction.Purpose.Split(".PP/.");
+
+            return splittedPurpose[splittedPurpose.Length - 1];
+        }
+
+        return transaction.Recipient.Name;
     }
 }

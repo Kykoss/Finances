@@ -51,7 +51,7 @@ namespace FinanzberaterHenno.Dal.TransactionImpoter
                 "KARTENZAHLUNG" => PaymentType.DebitCard,
                 "FOLGELASTSCHRIFT" or "ERSTLASTSCHRIFT" or "SEPA-ELV-LASTSCHRIFT" or "EINMAL LASTSCHRIFT" => PaymentType.DirectBooking,
                 "DAUERAUFTRAG" => PaymentType.PermanentDebit,
-                "LOHN  GEHALT" or "GUTSCHR. UEBERWEISUNG" => PaymentType.IncommingCredit,
+                "LOHN  GEHALT" or "GUTSCHR. UEBERWEISUNG" => PaymentType.IncomingCredit,
                 "BARGELDAUSZAHLUNG" => PaymentType.CashPayout,
                 "ENTGELTABSCHLUSS" or "ABSCHLUSS" => PaymentType.MonthClosing,
                 _ => PaymentType.Unknown,

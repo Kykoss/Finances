@@ -22,6 +22,6 @@ namespace FinanzberaterHenno.Contracts
 
         MonthClosing,
 
-        IncommingCredit
+        IncomingCredit
     }
 }
