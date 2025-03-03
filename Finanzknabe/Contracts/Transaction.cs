@@ -1,7 +1,6 @@
-﻿using Finanzknabe.Contracts;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FinanzberaterHenno.Contracts
+namespace Finanzknabe.Contracts
 {
     public class Transaction
     {
