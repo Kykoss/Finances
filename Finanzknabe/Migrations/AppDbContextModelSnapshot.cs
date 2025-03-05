@@ -22,7 +22,22 @@ namespace Finanzknabe.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("FinanzberaterHenno.Contracts.Recipient", b =>
+            modelBuilder.Entity("Finanzknabe.Contracts.BankAccount", b =>
+                {
+                    b.Property<string>("Iban")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Iban");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("BankAccounts");
+                });
+
+            modelBuilder.Entity("Finanzknabe.Contracts.Recipient", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -42,7 +57,7 @@ namespace Finanzknabe.Migrations
                     b.ToTable("Recipients");
                 });
 
-            modelBuilder.Entity("FinanzberaterHenno.Contracts.Transaction", b =>
+            modelBuilder.Entity("Finanzknabe.Contracts.Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -84,21 +99,6 @@ namespace Finanzknabe.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("Finanzknabe.Contracts.BankAccount", b =>
-                {
-                    b.Property<string>("Iban")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Iban");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("BankAccounts");
-                });
-
             modelBuilder.Entity("Finanzknabe.Contracts.User", b =>
                 {
                     b.Property<int>("Id")
@@ -134,23 +134,6 @@ namespace Finanzknabe.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FinanzberaterHenno.Contracts.Transaction", b =>
-                {
-                    b.HasOne("Finanzknabe.Contracts.BankAccount", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountIban");
-
-                    b.HasOne("FinanzberaterHenno.Contracts.Recipient", "Recipient")
-                        .WithMany()
-                        .HasForeignKey("RecipientID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-
-                    b.Navigation("Recipient");
-                });
-
             modelBuilder.Entity("Finanzknabe.Contracts.BankAccount", b =>
                 {
                     b.HasOne("Finanzknabe.Contracts.User", "Owner")
@@ -160,6 +143,23 @@ namespace Finanzknabe.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Finanzknabe.Contracts.Transaction", b =>
+                {
+                    b.HasOne("Finanzknabe.Contracts.BankAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountIban");
+
+                    b.HasOne("Finanzknabe.Contracts.Recipient", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Recipient");
                 });
 #pragma warning restore 612, 618
         }
