@@ -1,10 +1,8 @@
-﻿using FinanzberaterHenno.Contracts;
-using Finanzknabe.Dal.Extensions;
+﻿using Finanzknabe.Contracts;
 using Finanzknabe.Data;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.EntityFrameworkCore;
 
-namespace FinanzberaterHenno.Dal.TransactionImpoter
+namespace Finanzknabe.Dal.TransactionImpoter
 {
 
     public class SparkassenTransactionImporter : TransactionImporterBase

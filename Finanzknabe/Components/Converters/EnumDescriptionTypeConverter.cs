@@ -1,4 +1,4 @@
-﻿using FinanzberaterHenno.Contracts;
+﻿using Finanzknabe.Contracts;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;

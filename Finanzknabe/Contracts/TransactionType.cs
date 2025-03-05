@@ -1,7 +1,7 @@
 ﻿using Finanzknabe.Components.Converters;
 using System.ComponentModel;
 
-namespace FinanzberaterHenno.Contracts
+namespace Finanzknabe.Contracts
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum TransactionType

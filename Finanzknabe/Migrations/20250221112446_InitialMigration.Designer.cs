@@ -25,7 +25,7 @@ namespace Finanzknabe.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("FinanzberaterHenno.Contracts.Recipient", b =>
+            modelBuilder.Entity("Finanzknabe.Contracts.Recipient", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -45,7 +45,7 @@ namespace Finanzknabe.Migrations
                     b.ToTable("Recipients");
                 });
 
-            modelBuilder.Entity("FinanzberaterHenno.Contracts.Transaction", b =>
+            modelBuilder.Entity("Finanzknabe.Contracts.Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -137,13 +137,13 @@ namespace Finanzknabe.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FinanzberaterHenno.Contracts.Transaction", b =>
+            modelBuilder.Entity("Finanzknabe.Contracts.Transaction", b =>
                 {
                     b.HasOne("Finanzknabe.Contracts.BankAccount", "Account")
                         .WithMany()
                         .HasForeignKey("AccountIban");
 
-                    b.HasOne("FinanzberaterHenno.Contracts.Recipient", "Recipient")
+                    b.HasOne("Finanzknabe.Contracts.Recipient", "Recipient")
                         .WithMany()
                         .HasForeignKey("RecipientID")
                         .OnDelete(DeleteBehavior.Cascade)
