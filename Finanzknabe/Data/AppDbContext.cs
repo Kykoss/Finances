@@ -1,5 +1,4 @@
-﻿using FinanzberaterHenno.Contracts;
-using Finanzknabe.Contracts;
+﻿using Finanzknabe.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finanzknabe.Data

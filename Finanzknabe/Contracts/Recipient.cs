@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FinanzberaterHenno.Contracts
+namespace Finanzknabe.Contracts
 {
     public class Recipient
     {

@@ -34,10 +34,10 @@ else
                 <tr>
                     <td>@transaction.Date.ToShortDateString()</td>
                     <td align="center"><input type="checkbox" value="@transaction.Monthly" /></td>
-                    <td align="center"><img src="@Path.Combine($@"images\transactionTypes\{transaction.TransactionType.ToString()}.png")" title="@transaction.TransactionType" width="30" /></td>
+                    <td align="center"><img class="icon-image" src="@Path.Combine($@"images\transactionTypes\{transaction.TransactionType.ToString()}.png")" title="@transaction.TransactionType" /></td>
                     <td>@this.GetRecipientInfo(transaction)</td>
                     <td>@string.Format("{0:C}", transaction.Amount)</td>
-                    <td align="center"><img src="@Path.Combine($@"images\paymentTypes\{transaction.PaymentType.ToString()}.png")" title="@transaction.PaymentType" width="30" /></td>
+                    <td align="center"><img class="icon-image" src="@Path.Combine($@"images\paymentTypes\{transaction.PaymentType.ToString()}.png")" title="@transaction.PaymentType" /></td>
                 </tr>
             }
         </tbody>

@@ -1,0 +1,110 @@
+﻿@page "/recipients"
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+@using FinanzberaterHenno.Contracts
+@using Finanzknabe.Data
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel
+
+@inject AppDbContext AppDbContext
+
+<PageTitle>Recipients</PageTitle>
+
+@if (this.RecipientList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @if (!this.IsEditMode)
+    {
+        <button class="icon-button" @onclick="StartEditMode"><img class="icon-image" src="images\icons\edit.png" /></button>
+    }
+    else
+    {
+        <button class="icon-button" @onclick="SaveChanges"><img class="icon-image" src="images\icons\save.png" /></button>
+        <button class="icon-button" @onclick="CancelChanges"><img class="icon-image" src="images\icons\cancel.png" /></button>
+    }
+    <hr />
+    @* <div style="display: flex; justify-content:space-between" >
+        <select class="form-select" style="margin: 4px, 8px, 0px, 8px; width: 200px">
+            <option>Alle Empfänger</option>
+
+            @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
+            {
+                <option>@type.GetDescription()</option>
+            }
+        </select>
+        <input placeholder="Search for a recipient..." id="filter-input" value="@FilterText"/>
+    </div> *@
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Standardkategorie</th>
+                <th>Empfaenger</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var recipient in this.RecipientList)
+            {
+                <tr>
+                    <td width="250px">
+                        @if (this.IsEditMode)
+                        {
+                            <select value=@this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)
+                                    style="margin-right: 32px"
+                                    @onchange="@((ChangeEventArgs e) => recipient.DefaultTransactionType = (TransactionType)this.TransactionTypeConverter.ConvertFrom((string)e!.Value!)!)">
+                                @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
+                                {
+                                    <option>@this.TransactionTypeConverter.ConvertToString(type)</option>
+                                }
+                            </select>
+                        }
+
+                        <img class="icon-image" src="@Path.Combine($@"images\transactionTypes\{recipient.DefaultTransactionType.ToString()}.png")" title="this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)" />
+                    </td>
+                    <td>@recipient.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private DbSet<Recipient>? RecipientList;
+    private TypeConverter TransactionTypeConverter = TypeDescriptor.GetConverter(TransactionType.Uncategorized);
+    private bool IsEditMode;
+    // private string FilterText = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.SetRecipientList(null);
+    }
+
+    private void SetRecipientList(TransactionType? defaultTransactionType)
+    {
+        if (defaultTransactionType is null)
+        {
+            this.RecipientList = this.AppDbContext.Set<Recipient>();
+        }
+    }
+
+    private void StartEditMode()
+    {
+        this.IsEditMode = true;
+    }
+
+    private void SaveChanges()
+    {
+        this.AppDbContext.SaveChanges();
+        this.IsEditMode = false;
+    }
+
+    private void CancelChanges()
+    {
+        this.AppDbContext.ChangeTracker.Clear();
+        this.IsEditMode = false;
+    }
+}
