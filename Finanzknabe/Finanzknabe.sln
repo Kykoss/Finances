@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35806.99 d17.13
+VisualStudioVersion = 17.13.35806.99
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finanzknabe", "Finanzknabe.csproj", "{391718DA-8249-4679-84F3-312AD9EF6A02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finanzknabe.Test", "..\Finanzknabe.Test\Finanzknabe.Test.csproj", "{164DC462-DFDA-4F54-AB5D-935EC71281C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{391718DA-8249-4679-84F3-312AD9EF6A02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{391718DA-8249-4679-84F3-312AD9EF6A02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{391718DA-8249-4679-84F3-312AD9EF6A02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{164DC462-DFDA-4F54-AB5D-935EC71281C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{164DC462-DFDA-4F54-AB5D-935EC71281C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{164DC462-DFDA-4F54-AB5D-935EC71281C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{164DC462-DFDA-4F54-AB5D-935EC71281C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
