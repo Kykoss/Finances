@@ -2,20 +2,46 @@
 @rendermode InteractiveServer
 @attribute [StreamRendering]
 
+@using Finanzknabe.Components.Helper
 @using Finanzknabe.Contracts
+@using Finanzknabe.Dal.Extensions
 @using Finanzknabe.Data
 @using Microsoft.EntityFrameworkCore
+@using System.Collections.ObjectModel
 
 @inject AppDbContext AppDbContext
 
 <PageTitle>Transaktionen</PageTitle>
 
-@if (this.TransactionList == null)
+@if (this.FilteredTransactions == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 { 
+    <div style="display: flex; justify-content:space-between">
+        <div style="margin: 4px 0px 8px 0px">
+            <select class="form-select"
+            style="width: 200px; display: inline-block; margin: 0px 24px 0px 0px"
+            @onchange="@((ChangeEventArgs e) => this.TransactionTypeFilter = TransactionTypeHelper.GetTransactionTypeOrDefault(e))">
+                <option>Alle Empfänger</option>
+
+                @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
+                {
+                    <option>@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(type)</option>
+                }
+            </select>
+
+            <InputDate @bind-Value="this.DateFilterFrom" class="input-date"/>
+            -
+            <InputDate @bind-Value="this.DateFilterTo" class="input-date" />
+        </div>
+
+        <input @bind-value=this.RecipientsPurposeFilter
+        placeholder="Search for a transaction..."
+        id="filter-input"
+        style="margin: 4px 0px 8px 0px"/>
+    </div>
     <table class="table">
 
         <thead>
@@ -29,7 +55,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var transaction in this.TransactionList)
+            @foreach (var transaction in this.FilteredTransactions)
             {
                 <tr>
                     <td>@transaction.Date.ToShortDateString()</td>
@@ -46,11 +72,83 @@ else
 
 @code {
 
-    private List<Transaction>? TransactionList;
+    private IQueryable<Transaction>? AllTransactions;
+    private ObservableCollection<Transaction>? FilteredTransactions;
+
+    // Filters
+
+
+    private TransactionType? myTransactionTypeFilter;
+    private string myRecipientsPurposeFilter = string.Empty;
+    private DateOnly? myDateFilterFrom;
+    private DateOnly? myDateFilterTo;
+
+    private TransactionType? TransactionTypeFilter
+    {
+        get => this.myTransactionTypeFilter;
+        set
+        {
+            if (this.myTransactionTypeFilter != value)
+            {
+                this.myTransactionTypeFilter = value;
+                this.FilterRecipients();
+            }
+        }
+    }
+
+    private string RecipientsPurposeFilter
+    { 
+        get => this.myRecipientsPurposeFilter;
+        set
+        {
+            if (this.myRecipientsPurposeFilter != value)
+            {
+                this.myRecipientsPurposeFilter = value;
+                this.FilterRecipients();
+            }
+        } 
+    }
+
+    private DateOnly? DateFilterFrom
+    {
+        get => this.myDateFilterFrom;
+        set
+        {
+            if (this.myDateFilterFrom != value)
+            {
+                this.myDateFilterFrom = value;
+
+                if (this.DateFilterFrom is not null && this.DateFilterTo is not null)
+                {
+                    this.FilterRecipients();
+                }
+            }
+        }
+    }
+
+    private DateOnly? DateFilterTo
+    {
+        get => this.myDateFilterTo;
+        set
+        {
+            if (this.myDateFilterTo != value)
+            {
+                this.myDateFilterTo = value;
+
+                if (this.DateFilterFrom is not null && DateFilterTo is not null)
+                {
+                    this.FilterRecipients();
+                }
+            }
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
-        this.TransactionList = AppDbContext.Set<Transaction>().Include(x => x.Recipient).Include(x => x.Account).ToList();
+        this.AllTransactions = AppDbContext.Set<Transaction>().Include(x => x.Recipient).Include(x => x.Account);
+
+        this.SetInitialDateFilter();
     }
 
     private string GetRecipientInfo(Transaction transaction)
@@ -69,5 +167,45 @@ else
         }
 
         return transaction.Recipient.Name;
+    }
+
+    private void SetInitialDateFilter()
+    {
+        if (this.AllTransactions is null)
+        {
+            this.DateFilterFrom = new(DateTime.Today.Year, 1, 1); 
+            this.DateFilterTo = new(DateTime.Today.Year, 12, 31);
+        }
+        else
+        {
+            var lastTransactionDate = this.AllTransactions.Max(x => x.Date);
+
+            this.DateFilterFrom = new(lastTransactionDate.Year, lastTransactionDate.Month, 1);
+            this.DateFilterTo = new(lastTransactionDate.Year, lastTransactionDate.Month, DateTime.DaysInMonth(lastTransactionDate.Year, lastTransactionDate.Month));
+        }
+    }
+
+    private bool FilterRecipients()
+    {
+        if (this.AllTransactions is not null)
+        {
+            var filteredTransactions = this.AllTransactions!.Where(x => x.Recipient.Name.Contains(this.RecipientsPurposeFilter) || x.Purpose.Contains(this.RecipientsPurposeFilter));
+
+            if (this.TransactionTypeFilter is not null)
+            {
+                filteredTransactions = filteredTransactions.Where(x => x.TransactionType == this.TransactionTypeFilter);
+            }
+
+            if (this.DateFilterFrom is not null && this.DateFilterTo is not null)
+            {
+                filteredTransactions = filteredTransactions.Where(x => x.Date >= this.DateFilterFrom && x.Date <= this.DateFilterTo);
+            }
+
+            this.FilteredTransactions = filteredTransactions.ToObservableCollection();
+
+            return true;
+        }
+
+        return false;
     }
 }

@@ -50,6 +50,15 @@ h1:focus {
     border-color: #929292;
 }
 
+/* Own Styles */
+
+.input-date {
+    height: 100%;
+    border-radius: 0.25rem;
+    padding: 0px 4px 0px 8px;
+    width: 130px;
+}
+
 .icon-button {
     background-color: transparent;
     border: none;
@@ -62,7 +71,6 @@ h1:focus {
 #filter-input {
     padding: 0.375rem 0.75rem;
     line-height: 1.5;
-    white-space: nowrap;
     width:400px;
     background-color: #fafafa;
     border: 1px solid #ced4da;
