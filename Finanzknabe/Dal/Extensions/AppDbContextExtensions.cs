@@ -3,7 +3,7 @@ using Finanzknabe.Data;
 
 namespace Finanzknabe.Dal.Extensions
 {
-    public static class AppDbContextExtension
+    public static class AppDbContextExtensions
     {
         public static BankAccount GetBankAccount(this AppDbContext dbContext, string iban)
         {
