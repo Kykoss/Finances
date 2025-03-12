@@ -33,6 +33,8 @@ namespace Finanzknabe.Components.Converters
                         return item;
                     }
                 }
+
+                return null;
             }
             
             return base.ConvertFrom(context, culture, value);

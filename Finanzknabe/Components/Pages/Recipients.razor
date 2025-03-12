@@ -2,16 +2,18 @@
 @rendermode InteractiveServer
 @attribute [StreamRendering]
 
+@using Finanzknabe.Components.Helper
 @using Finanzknabe.Contracts
+@using Finanzknabe.Dal.Extensions
 @using Finanzknabe.Data
 @using Microsoft.EntityFrameworkCore
-@using System.ComponentModel
+@using System.Collections.ObjectModel
 
 @inject AppDbContext AppDbContext
 
 <PageTitle>Recipients</PageTitle>
 
-@if (this.RecipientList == null)
+@if (this.FilteredRecipients == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -27,17 +29,23 @@ else
         <button class="icon-button" @onclick="CancelChanges"><img class="icon-image" src="images\icons\cancel.png" /></button>
     }
     <hr />
-    @* <div style="display: flex; justify-content:space-between" >
-        <select class="form-select" style="margin: 4px, 8px, 0px, 8px; width: 200px">
+    <div style="display: flex; justify-content:space-between" >
+        <select class="form-select"
+        style="margin: 4px, 8px, 0px, 8px; width: 200px"
+        disabled="@this.IsEditMode"
+                @onchange="@((ChangeEventArgs e) => this.FilterChanged(TransactionTypeHelper.GetTransactionTypeOrDefault(e)))">
             <option>Alle Empfänger</option>
 
             @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
             {
-                <option>@type.GetDescription()</option>
+                <option>@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(type)</option>
             }
         </select>
-        <input placeholder="Search for a recipient..." id="filter-input" value="@FilterText"/>
-    </div> *@
+        <input placeholder="Search for a recipient..."
+        id="filter-input"
+        disabled="@this.IsEditMode"
+        @onchange="@((ChangeEventArgs e) => this.FilterChanged((string)e.Value!))" />
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -46,23 +54,25 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var recipient in this.RecipientList)
+            @foreach (var recipient in this.FilteredRecipients)
             {
                 <tr>
                     <td width="250px">
                         @if (this.IsEditMode)
                         {
-                            <select value=@this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)
-                                    style="margin-right: 32px"
-                                    @onchange="@((ChangeEventArgs e) => recipient.DefaultTransactionType = (TransactionType)this.TransactionTypeConverter.ConvertFrom((string)e!.Value!)!)">
+                            <select value=@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)
+                            style="margin-right: 32px"
+                            @onchange="@((ChangeEventArgs e) => recipient.DefaultTransactionType = (TransactionType)TransactionTypeHelper.GetTransactionTypeOrDefault(e)!)">
                                 @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
                                 {
-                                    <option>@this.TransactionTypeConverter.ConvertToString(type)</option>
+                                    <option>@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(type)</option>
                                 }
                             </select>
                         }
 
-                        <img class="icon-image" src="@Path.Combine($@"images\transactionTypes\{recipient.DefaultTransactionType.ToString()}.png")" title="this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)" />
+                        <img class="icon-image"
+                        src="@Path.Combine($@"images\transactionTypes\{recipient.DefaultTransactionType.ToString()}.png")"
+                        title="this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)" />
                     </td>
                     <td>@recipient.Name</td>
                 </tr>
@@ -73,22 +83,58 @@ else
 
 @code {
 
-    private DbSet<Recipient>? RecipientList;
-    private TypeConverter TransactionTypeConverter = TypeDescriptor.GetConverter(TransactionType.Uncategorized);
+    private DbSet<Recipient>? AllRecipients;
+    private ObservableCollection<Recipient> FilteredRecipients = new ObservableCollection<Recipient>();
     private bool IsEditMode;
-    // private string FilterText = string.Empty;
+
+    private TransactionType? TransactionTypeFilter;
+    private string NameFilter = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        this.SetRecipientList(null);
+        this.AllRecipients = this.AppDbContext.Set<Recipient>();
+        this.FilteredRecipients = this.AllRecipients.ToObservableCollection();
     }
 
-    private void SetRecipientList(TransactionType? defaultTransactionType)
+    /// <summary>
+    /// Updates the TransactionTypeFilter and filters FilteredRecipients to only display Recipients matching the set filters
+    /// </summary>
+    /// <param name="defaultTransactionType">The desired DefaultTransactionType</param>
+    /// <returns>True if successful, false if an error occured</returns>
+    private bool FilterChanged(TransactionType? defaultTransactionType)
     {
-        if (defaultTransactionType is null)
+        this.TransactionTypeFilter = defaultTransactionType;
+        return this.FilterRecipients();
+    }
+
+    /// <summary>
+    /// Updates the NameFilter and filters FilteredRecipients to only display Recipients matching the set filters
+    /// </summary>
+    /// <param name="string">The desired search string</param>
+    /// <returns>True if successful, false if an error occured</returns>
+    private bool FilterChanged(string searchString)
+    {
+        this.NameFilter = searchString;
+        return this.FilterRecipients();
+    }
+
+    private bool FilterRecipients()
+    {
+        if (this.AllRecipients is not null)
         {
-            this.RecipientList = this.AppDbContext.Set<Recipient>();
+            if (this.TransactionTypeFilter is null)
+            {
+                this.FilteredRecipients = this.AllRecipients!.Where(x => x.Name.Contains(this.NameFilter)).ToObservableCollection();
+            }
+            else
+            {
+                this.FilteredRecipients = this.AllRecipients!.Where(x => x.Name.Contains(this.NameFilter) && x.DefaultTransactionType == this.TransactionTypeFilter).ToObservableCollection();
+            }
+            
+            return true;
         }
+
+        return false;
     }
 
     private void StartEditMode()
