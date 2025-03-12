@@ -31,7 +31,7 @@ else
     <hr />
     <div style="display: flex; justify-content:space-between" >
         <select class="form-select"
-        style="margin: 4px, 8px, 0px, 8px; width: 200px"
+        style="width: 200px"
         disabled="@this.IsEditMode"
                 @onchange="@((ChangeEventArgs e) => this.FilterChanged(TransactionTypeHelper.GetTransactionTypeOrDefault(e)))">
             <option>Alle Empfänger</option>
