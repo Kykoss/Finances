@@ -31,9 +31,9 @@ else
     <hr />
     <div style="display: flex; justify-content:space-between" >
         <select class="form-select"
-        style="width: 200px"
-        disabled="@this.IsEditMode"
-                @onchange="@((ChangeEventArgs e) => this.FilterChanged(TransactionTypeHelper.GetTransactionTypeOrDefault(e)))">
+                style="width: 200px"
+                disabled="@this.IsEditMode"
+                @onchange="@((ChangeEventArgs e) => this.TransactionTypeFilter = TransactionTypeHelper.GetTransactionTypeOrDefault(e))">
             <option>Alle Empfänger</option>
 
             @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
@@ -41,10 +41,10 @@ else
                 <option>@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(type)</option>
             }
         </select>
-        <input placeholder="Search for a recipient..."
-        id="filter-input"
-        disabled="@this.IsEditMode"
-        @onchange="@((ChangeEventArgs e) => this.FilterChanged((string)e.Value!))" />
+        <input @bind-value="this.NameFilter"
+               placeholder="Search for a recipient..."
+               id="filter-input"
+               disabled="@this.IsEditMode" />
     </div>
     <table class="table">
         <thead>
@@ -61,8 +61,8 @@ else
                         @if (this.IsEditMode)
                         {
                             <select value=@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)
-                            style="margin-right: 32px"
-                            @onchange="@((ChangeEventArgs e) => recipient.DefaultTransactionType = (TransactionType)TransactionTypeHelper.GetTransactionTypeOrDefault(e)!)">
+                                    style="margin-right: 32px"
+                                     @onchange="@((ChangeEventArgs e) => recipient.DefaultTransactionType = (TransactionType)TransactionTypeHelper.GetTransactionTypeOrDefault(e)!)">
                                 @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
                                 {
                                     <option>@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(type)</option>
@@ -71,8 +71,8 @@ else
                         }
 
                         <img class="icon-image"
-                        src="@Path.Combine($@"images\transactionTypes\{recipient.DefaultTransactionType.ToString()}.png")"
-                        title="this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)" />
+                             src="@Path.Combine($@"images\transactionTypes\{recipient.DefaultTransactionType.ToString()}.png")"
+                             title="this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)" />
                     </td>
                     <td>@recipient.Name</td>
                 </tr>
@@ -87,8 +87,35 @@ else
     private ObservableCollection<Recipient> FilteredRecipients = new ObservableCollection<Recipient>();
     private bool IsEditMode;
 
-    private TransactionType? TransactionTypeFilter;
-    private string NameFilter = string.Empty;
+    // Filters
+    private TransactionType? myTransactionTypeFilter;
+    private string myNameFilter = string.Empty;
+
+    private TransactionType? TransactionTypeFilter
+    {
+        get => this.myTransactionTypeFilter;
+        set
+        {
+            if (this.myTransactionTypeFilter != value)
+            {
+                this.myTransactionTypeFilter = value;
+                this.FilterRecipients();
+            }
+        }
+    }
+
+    private string NameFilter
+    {
+        get => this.myNameFilter;
+        set
+        {
+            if (this.myNameFilter != value)
+            {
+                this.myNameFilter = value;
+                this.FilterRecipients();
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,41 +123,19 @@ else
         this.FilteredRecipients = this.AllRecipients.ToObservableCollection();
     }
 
-    /// <summary>
-    /// Updates the TransactionTypeFilter and filters FilteredRecipients to only display Recipients matching the set filters
-    /// </summary>
-    /// <param name="defaultTransactionType">The desired DefaultTransactionType</param>
-    /// <returns>True if successful, false if an error occured</returns>
-    private bool FilterChanged(TransactionType? defaultTransactionType)
-    {
-        this.TransactionTypeFilter = defaultTransactionType;
-        return this.FilterRecipients();
-    }
-
-    /// <summary>
-    /// Updates the NameFilter and filters FilteredRecipients to only display Recipients matching the set filters
-    /// </summary>
-    /// <param name="string">The desired search string</param>
-    /// <returns>True if successful, false if an error occured</returns>
-    private bool FilterChanged(string searchString)
-    {
-        this.NameFilter = searchString;
-        return this.FilterRecipients();
-    }
-
     private bool FilterRecipients()
     {
         if (this.AllRecipients is not null)
         {
-            if (this.TransactionTypeFilter is null)
+            var filteredRecipients = this.AllRecipients!.Where(x => x.Name.Contains(this.NameFilter));
+
+            if (this.TransactionTypeFilter is not null)
             {
-                this.FilteredRecipients = this.AllRecipients!.Where(x => x.Name.Contains(this.NameFilter)).ToObservableCollection();
+                filteredRecipients = filteredRecipients.Where(x => x.DefaultTransactionType == this.TransactionTypeFilter);
             }
-            else
-            {
-                this.FilteredRecipients = this.AllRecipients!.Where(x => x.Name.Contains(this.NameFilter) && x.DefaultTransactionType == this.TransactionTypeFilter).ToObservableCollection();
-            }
-            
+
+            this.FilteredRecipients = filteredRecipients.ToObservableCollection();
+
             return true;
         }
 
