@@ -31,9 +31,9 @@ else
     <hr />
     <div style="display: flex; justify-content:space-between" >
         <select class="form-select"
-                style="width: 200px"
-                disabled="@this.IsEditMode"
-                @onchange="@((ChangeEventArgs e) => this.TransactionTypeFilter = TransactionTypeHelper.GetTransactionTypeOrDefault(e))">
+        style="width: 200px"
+        disabled="@this.IsEditMode"
+        @onchange="@((ChangeEventArgs e) => this.TransactionTypeFilter = TransactionTypeHelper.GetTransactionTypeOrDefault(e))">
             <option>Alle Empfänger</option>
 
             @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
@@ -42,15 +42,16 @@ else
             }
         </select>
         <input @bind-value="this.NameFilter"
-               placeholder="Search for a recipient..."
-               id="filter-input"
-               disabled="@this.IsEditMode" />
+        placeholder="Search for a recipient..."
+        id="filter-input"
+        disabled="@this.IsEditMode" />
     </div>
     <table class="table">
         <thead>
             <tr>
                 <th>Standardkategorie</th>
-                <th>Empfaenger</th>
+                <th>Empfaenger (abweichender Anzeigename)</th>
+                <th>Empfaenger (Name im Kontoauszug)</th>
             </tr>
         </thead>
         <tbody>
@@ -61,8 +62,8 @@ else
                         @if (this.IsEditMode)
                         {
                             <select value=@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)
-                                    style="margin-right: 32px"
-                                     @onchange="@((ChangeEventArgs e) => recipient.DefaultTransactionType = (TransactionType)TransactionTypeHelper.GetTransactionTypeOrDefault(e)!)">
+                            style="margin-right: 32px"
+                            @onchange="@((ChangeEventArgs e) => recipient.DefaultTransactionType = (TransactionType)TransactionTypeHelper.GetTransactionTypeOrDefault(e)!)">
                                 @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
                                 {
                                     <option>@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(type)</option>
@@ -71,10 +72,20 @@ else
                         }
 
                         <img class="icon-image"
-                             src="@Path.Combine($@"images\transactionTypes\{recipient.DefaultTransactionType.ToString()}.png")"
-                             title="this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)" />
+                        src="@Path.Combine($@"images\transactionTypes\{recipient.DefaultTransactionType.ToString()}.png")"
+                        title="this.TransactionTypeConverter.ConvertToString(recipient.DefaultTransactionType)" />
                     </td>
-                    <td>@recipient.Name</td>
+                    <td width="600px" style="align-content:center">
+                        @if (this.IsEditMode)
+                        {
+                            <InputText @bind-Value="recipient.CustomName" style="height:28px; width:90%; margin:0px"/>
+                        }
+                        else
+                        {
+                            <a>@recipient.CustomName</a>
+                        }
+                    </td>
+                    <td style="align-content:center">@recipient.Name</td>
                 </tr>
             }
         </tbody>

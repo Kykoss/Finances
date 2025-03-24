@@ -9,6 +9,8 @@ namespace Finanzknabe.Contracts
 
         public string Name { get; set; }
 
+        public string CustomName { get; set; }
+
         public TransactionType DefaultTransactionType { get; set; } = TransactionType.Uncategorized;
 
         public Recipient()

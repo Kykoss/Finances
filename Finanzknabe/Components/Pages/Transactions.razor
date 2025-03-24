@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @attribute [StreamRendering]
 
+@using Finanzknabe.Components.Extensions
 @using Finanzknabe.Components.Helper
 @using Finanzknabe.Contracts
 @using Finanzknabe.Dal.Extensions
@@ -213,7 +214,7 @@ else
             return splittedPurpose[splittedPurpose.Length - 1];
         }
 
-        return transaction.Recipient.Name;
+        return transaction.Recipient.GetDisplayName();
     }
 
     private void SetInitialDateFilter()
