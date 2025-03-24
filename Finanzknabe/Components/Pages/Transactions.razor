@@ -19,6 +19,16 @@
 }
 else
 { 
+    @if (!this.IsEditMode)
+    {
+        <button class="icon-button" @onclick="StartEditMode"><img class="icon-image" src="images\icons\edit.png" /></button>
+    }
+    else
+    {
+        <button class="icon-button" @onclick="SaveChanges"><img class="icon-image" src="images\icons\save.png" /></button>
+        <button class="icon-button" @onclick="CancelChanges"><img class="icon-image" src="images\icons\cancel.png" /></button>
+    }
+    <hr />
     <div style="display: flex; justify-content:space-between">
         <div style="margin: 4px 0px 8px 0px">
             <select class="form-select"
@@ -58,9 +68,24 @@ else
             @foreach (var transaction in this.FilteredTransactions)
             {
                 <tr>
-                    <td>@transaction.Date.ToShortDateString()</td>
-                    <td align="center"><input type="checkbox" value="@transaction.Monthly" /></td>
-                    <td align="center"><img class="icon-image" src="@Path.Combine($@"images\transactionTypes\{transaction.TransactionType.ToString()}.png")" title="@transaction.TransactionType" /></td>
+                    <td width="100px">@transaction.Date.ToShortDateString()</td>
+                    <td align="center" width="30px">
+                        <input type="checkbox" @bind-value="@transaction.Monthly" checked="@transaction.Monthly" />
+                    </td>
+                    <td align="center" width=@TransactionTypeColumnLength>
+                        @if (this.IsEditMode)
+                        {
+                            <select value=@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(transaction.TransactionType)
+                            style="margin-right: 32px"
+                            @onchange="@((ChangeEventArgs e) => transaction.TransactionType = (TransactionType)TransactionTypeHelper.GetTransactionTypeOrDefault(e)!)">
+                                @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
+                                {
+                                    <option>@TransactionTypeHelper.TransactionTypeConverter.ConvertToString(type)</option>
+                                }
+                            </select>
+                        }
+                        <img class="icon-image" src="@Path.Combine($@"images\transactionTypes\{transaction.TransactionType.ToString()}.png")" title="@transaction.TransactionType" />
+                    </td>
                     <td>@this.GetRecipientInfo(transaction)</td>
                     <td>@string.Format("{0:C}", transaction.Amount)</td>
                     <td align="center"><img class="icon-image" src="@Path.Combine($@"images\paymentTypes\{transaction.PaymentType.ToString()}.png")" title="@transaction.PaymentType" /></td>
@@ -72,11 +97,33 @@ else
 
 @code {
 
+    private bool myIsEditMode = false;
+
     private IQueryable<Transaction>? AllTransactions;
     private ObservableCollection<Transaction>? FilteredTransactions;
+    private int TransactionTypeColumnLength = 80;
+
+    private bool IsEditMode
+    {
+        get => this.myIsEditMode;
+        set
+        {
+            if (this.myIsEditMode != value)
+            {
+                this.myIsEditMode = value;
+                if (this.IsEditMode)
+                {
+                    this.TransactionTypeColumnLength = 250;
+                }
+                else
+                {
+                    this.TransactionTypeColumnLength = 80;
+                }
+            }
+        }
+    }
 
     // Filters
-
 
     private TransactionType? myTransactionTypeFilter;
     private string myRecipientsPurposeFilter = string.Empty;
@@ -207,5 +254,22 @@ else
         }
 
         return false;
+    }
+
+    private void StartEditMode()
+    {
+        this.IsEditMode = true;
+    }
+
+    private void SaveChanges()
+    {
+        this.AppDbContext.SaveChanges();
+        this.IsEditMode = false;
+    }
+
+    private void CancelChanges()
+    {
+        this.AppDbContext.ChangeTracker.Clear();
+        this.IsEditMode = false;
     }
 }
